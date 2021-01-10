@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link href="icon/placeholder.svg" rel="icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapping of Points which as Format DMS & DD</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!--  -->
+    <!-- CSS -->
+    <style>
+        #map {
+            width: 100%;
+            height: 100%;
+            margin-top: auto;
+            margin-bottom: auto;
+            /* box-shadow: 0 2px 4px 0 #007bff, 0 2px 4px 0 #007bff; */
+            border: solid 1px#343a40; /*#007bff  #f8f9fa*/        
+            }
+        @media only screen and (max-width: 768px){
+            #map{
+                display: list-item;
+                height: 450px;
+                margin-top: 3%;
+            }
+        }
+        @media only screen and (min-width: 768px){
+            #map{
+                height: 100%;
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
+
+<body class="bg-light">
+    <div style="margin-left: auto;margin-right: auto;" class="container pl-6">
+        <div class="row col-sm-12 bg-light m-3">
+            <div class="row col-sm-6 pl-0 ">
+                <center class="col-sm-12">
+                    <div class="form-group col-sm-12 p-0">
+                        <select onChange="change()" class="form-control" id="selector">
+                            <option value="1">DMS to Map</option>
+                            <option value="2">DD to Map</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-sm-12 p-0">
+                        <input autocomplete="off" class="form-control" placeholder="Latitude" id="lat">
+                    </div>
+                    <div class="form-group col-sm-12 p-0">
+                        <input autocomplete="off" type="text" class="form-control" placeholder="Longitude" id="long">
+                    </div>
+                    <button style="margin-right: auto; margin-left: auto;" id='btn' onclick="execution()" class="btn btn-primary col-sm-6 mb-4 ">Map it</button>
+                    <div class="col-sm-12 p-0" id="instruc">
+                        <ul class="list-group">
+                            <li style="font-size: 22px;letter-spacing: 1.5px"
+                                class="font-weight-bold font-weight-normal text-justify list-group-item bg-dark text-white text-center">
+                                Guides</li>
+                            <li class="font-weight-normal text-justify list-group-item">if use DMS to Map you must to enter
+                                coordinate as a format 20 7 5 N in Latitude box and 8 2 30 E in Longitude box, I mean to
+                                separate degrees, minutes, seconds, and hemisphere using single space</li>
+                            <li class="font-weight-normal text-justify list-group-item">you can map decimal degrees point,
+                                just choose DD to Map from dropdown above </li>
+                        </ul>
+                    </div>
+                </center>
+            </div>
+            <!--  -->
+            <div class="row col-sm-6">
+                <center class="col-sm-12 pl-0"><div id="map" class="col-sm-12"></div></center>
+            </div>
+        </div>
+        <center><small style="margin: 0%;">By <a href="https://github.com/YasserIsmail">Yasser Ismail</a> © 2021</small></center>
+    </div>
+    <script>
+        var my_map = L.map(
+            "map",
+            {
+                center: [31.9474, 35.2272], //31.51667,34.48333
+                crs: L.CRS.EPSG3857,
+                zoom: 6,
+                zoomControl: true,
+                preferCanvas: false,
+            }
+        );
+
+        L.tileLayer(
+            "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png",
+            { "attribution": "\u0026copy; \u003ca href=\"http://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"http://cartodb.com/attributions\"\u003eCartoDB\u003c/a\u003e, CartoDB \u003ca href =\"http://cartodb.com/attributions\"\u003eattributions\u003c/a\u003e", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false }
+        ).addTo(my_map);
+
+        function execution() {
+            var selector = document.getElementById('selector')
+            var inx = selector.selectedIndex
+            if (inx === 0) {
+                var y = document.getElementById('lat').value.split(" ");
+                var x = document.getElementById('long').value.split(" ");
+
+                // himesphere
+                var DDy = Number(y[0]) + Number(y[1]) / 60 + Number(y[1]) / 3600
+                if (y[3] === "s" || y[3] === "S") {
+                    DDy *= -1
+                };
+                var DDx = Number(x[0]) + Number(x[1]) / 60 + Number(x[1]) / 3600
+                if (x[3] === "w" || x[3] === "W") {
+                    DDx *= -1
+                };
+                // 
+                var marker = L.marker([DDy, DDx]).addTo(my_map)
+                marker.bindPopup("<b>lat : " + DDy + "</b><br><b>long : " + DDx + "</b>").openPopup();
+                my_map.flyTo([DDy, DDx], 9)
+            }
+            else {
+                var y = Number(document.getElementById('lat').value);
+                var x = Number(document.getElementById('long').value);
+                var marker = L.marker([y, x]).addTo(my_map)
+                marker.bindPopup("<b>lat : " + y + "</b><br><b>long : " + x + "</b>").openPopup();
+                my_map.flyTo([y, x], 9)
+            }
+        };
+    </script>
+</body>
+
+</html>
